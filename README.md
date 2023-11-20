@@ -1,5 +1,5 @@
 # ITVB23KMO4
-Repository for ITVB23KMO2 **[Artificial Intelligence](https://catalogue.hanze.nl/nl/course/2023/ITVB23KMO4)** at Hanze University of Applied Sciences.
+Repository for ITVB23KMO4 **[Artificial Intelligence](https://catalogue.hanze.nl/nl/course/2023/ITVB23KMO4)** Course at Hanze University of Applied Sciences.
 
 ## Checklist
 
