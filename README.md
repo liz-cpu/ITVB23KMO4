@@ -4,7 +4,7 @@ Repository for ITVB23KMO2 **[Artificial Intelligence](https://catalogue.hanze.nl
 ## Checklist
 
 | Assignment | Deadline | Ramon's version | Liz's version |
-| --- | --- | --- |
+| --- | --- | --- | --- |
 | Week 1 | Nov 28| [❌](#) | [❌](#) |
 | Week 2 | Dec 5| [❌](#) | [❌](#) |
 | Week 3 | Dec 19| [❌](#) | [❌](#) |
