@@ -16,10 +16,15 @@
 ## Deadlines
 
 Week 1: 28 november
+
 Week 2: 5 december
+
 Week 3: 19 december
+
 Week 4: 9 januari
+
 Week 5: 23 januari
+
 
 ## Checklist
 
