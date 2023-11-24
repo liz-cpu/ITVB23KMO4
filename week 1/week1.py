@@ -39,42 +39,145 @@ class Node(object):
         return children
 
 
-def dfs(node: Node, goal: Node, visited: list = []) -> Node:
+def dfs(node: Node, goal: Node, path: list = [], visited: list = []) -> list:
     if node == goal:
-        return node
-    if node in visited or not node.is_valid():
-        return None
-    visited.append(node)
-    for child in node.get_children():
-        result = dfs(child, goal, visited)
-        if result is not None:
-            return result
-    return None
-
-def bfs(node: Node, goal: Node) -> Node:
-    visited = []
-    queue = [node]
-    while len(queue) > 0:
-        current = queue.pop(0)
-        if current == goal:
-            return current
-        if current in visited or not current.is_valid():
-            continue
-        visited.append(current)
-        for child in current.get_children():
-            queue.append(child)
-    return None
-
-def print_solution(node: Node):
-    path = []
-    while node is not None:
         path.append(node)
-        node = node.parent
-    path.reverse()
-    for node in path:
-        print(node)
+        return [path]
+    if node in visited or not node.is_valid():
+        return []
+    visited.append(node)
+    paths = []
+    for child in node.get_children():
+        result_paths = dfs(child, goal, path + [node], visited)
+        paths.extend(result_paths)
+    return paths
+
 
 print("DFS:")
-print_solution(dfs(Node(set("🐐🥬🐺"), set(), True), Node(set(), set("🐐🥬🐺"), False)))
-print("BFS:")
-print_solution(bfs(Node(set("🐐🥬🐺"), set(), True), Node(set(), set("🐐🥬🐺"), False)))
+start_node = Node(set("🐐🐺🥬"), set(), True)
+goal_node = Node(set("🐐"), set("🐺🥬"), False)
+
+result_paths = dfs(start_node, goal_node)
+
+if result_paths:
+    for path in result_paths:
+        for node in path:
+            print(node)
+        print("----")
+
+
+def get_solution(string: str) -> str:
+    top, bottom = string.split("|")
+    farmer = True if "F" in top else False
+    node = Node(set(top), set(bottom), farmer)
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
