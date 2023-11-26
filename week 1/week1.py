@@ -1,183 +1,61 @@
-class Node(object):
-    prohibited = [set("🐐🥬"), set("🐐🐺")]
+class NumbrixBoard(object):
 
-    def __init__(self, top: set[chr], bottom: set[chr], farmer: bool, parent: bool = None):
-        self.top = top
-        self.bottom = bottom
-        self.farmer = farmer
-        self.parent = parent
+    def __init__(self, hints: list[list[str]]):
+        self.board = hints
+        self.size = len(hints)
+        self.start = self.find_in_board('1')
+        self.end = self.find_in_board(chr(self.size**2))
 
     def __str__(self):
-        return "".join(self.top) + ("👨|" if self.farmer else "|👨") + "".join(self.bottom)
+        cols = len(self.board[0])
+        line = f'┌{"───┬" * (cols - 1)}───┐\n'
+        separator = f'├{"───┼" * (cols - 1)}───┤\n'
+        end_line = f'└{"───┴" * (cols - 1)}───┘'
 
-    def __eq__(self, __value: object) -> bool:
-        return self.top == __value.top and self.bottom == __value.bottom and self.farmer == __value.farmer
+        rows = [f'│ {" │ ".join(row)} │\n' for row in self.board]
 
-    def move(self, item: chr):
-        if self.farmer:
-            self.top.remove(item)
-            self.bottom.add(item)
-        else:
-            self.bottom.remove(item)
-            self.top.add(item)
-        self.farmer = not self.farmer
-
-    def is_valid(self) -> bool:
-        items_on_shore = self.bottom if self.farmer else self.top
-        return  not any(p.issubset(items_on_shore) for p in self.prohibited)
-
-    def get_children(self) -> list:
-        children = []
-        for item in self.top if self.farmer else self.bottom:
-            child = Node(self.top.copy(), self.bottom.copy(),
-                         self.farmer, self)
-            child.move(item)
-            children.append(child)
-        child = Node(self.top.copy(), self.bottom.copy(),
-                     not self.farmer, self)
-        children.append(child)
-        return children
-
-
-def dfs(node: Node, goal: Node, path: list = [], visited: list = []) -> list:
-    if node == goal:
-        path.append(node)
-        return [path]
-    if node in visited or not node.is_valid():
-        return []
-    visited.append(node)
-    paths = []
-    for child in node.get_children():
-        result_paths = dfs(child, goal, path + [node], visited)
-        paths.extend(result_paths)
-    return paths
-
-
-print("DFS:")
-start_node = Node(set("🐐🐺🥬"), set(), True)
-goal_node = Node(set("🐐"), set("🐺🥬"), False)
-
-result_paths = dfs(start_node, goal_node)
-
-if result_paths:
-    for path in result_paths:
-        for node in path:
-            print(node)
-        print("----")
-
-
-def get_solution(string: str) -> str:
-    top, bottom = string.split("|")
-    farmer = True if "F" in top else False
-    node = Node(set(top), set(bottom), farmer)
+        return line + separator.join(rows) + end_line
     
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    def __repr__(self):
+        return f'NumbrixBoard(hints={self.board})'
+
+    def find_in_board(self, num: str) -> tuple[int, int] | None:
+        for i in range(len(self.board)):
+            for j in range(len(self.board[0])):
+                if self.board[i][j] == num:
+                    return (i, j)
+        return None
+
+    def get_neighbors(self, i: int, j: int) -> list[tuple[int, int]]:
+        neighbors = []
+        for x, y in [(i-1, j), (i, j-1), (i+1, j), (i, j+1)]: # O(1).
+            if 0 <= x < self.size and 0 <= y < self.size:
+                neighbors.append((x, y))
+        return neighbors
+
+    def dfs(self, visited: list[tuple[int, int]] = [], num: int = 1, coords: tuple[int, int] = None) -> bool:
+        print("hello")
+        i, j = coords or self.start
+        if (i, j) == self.end:
+            return True
+        for x, y in self.get_neighbors(i, j):
+            if (x, y) in visited:
+                continue
+            print(f"Coords: {x}, {y}")
+            print(self.board[x][y])
+            neigh_num = int(self.board[x][y]) if self.board[x][y] != ' ' else num + 1
+            print(neigh_num)
+            if (x, y) not in visited and neigh_num == num + 1:
+                visited.append((x, y))
+                if self.dfs(visited, num + 1, (x, y)):
+                    return True
+                visited.pop()
+        return False
+
+b = NumbrixBoard([
+    ['1', ' ', ' '],
+    [' ', '5', ' '],
+    [' ', ' ', '9']
+])
+
+print(b.dfs())
