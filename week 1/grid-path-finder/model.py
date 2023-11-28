@@ -67,30 +67,48 @@ def h(start, goal):
     return math.sqrt((start[0] - goal[0]) ** 2 + (start[1] - goal[1]) ** 2)
 
 
-def ucs(app, start, goal) -> list[tuple[int, int]]:
-    """
-    Uniform Cost Search
-    Non-heuristic search algorithm
-    """
+def ucs(app, start, goal):
     frontier = PriorityQueue()
     visited = set()
     frontier.put(start, 0)
+    came_from = {}  # To store the parent node for each explored node
+    cost_so_far = {start: 0}  # To store the cost to reach each explored node
+
     while not frontier.empty():
         current = frontier.get()
+
         if current == goal:
+            # Reconstruct the path and plot it
+            path = reconstruct_path(came_from, start, goal)
+            for node in path:
+                app.plot_node(node, color=cf.FINAL_C)
+                app.pause()
             return
+
         visited.add(current)
-        for next in get_neighbors(current):
-            if next not in visited:
-                if next == goal:
-                    app.plot_node(next, color=cf.PATH_C)
-                    app.pause()
-                    return
-                frontier.put(next, g(next, goal))
-                set_grid_value(next, g(next, goal))
-                app.plot_node(next, color=cf.PATH_C)
+
+        for next_node in get_neighbors(current):
+            new_cost = cost_so_far[current] + 1
+
+            if next_node not in visited and (next_node not in cost_so_far or new_cost < cost_so_far[next_node]):
+                cost_so_far[next_node] = new_cost
+                frontier.put(next_node, new_cost)
+                came_from[next_node] = current
+                app.plot_node(next_node, color=cf.PATH_C)
                 app.pause()
     return
+
+
+def reconstruct_path(came_from, start, goal):
+    current = goal
+    path = [current]
+
+    while current != start:
+        current = came_from[current]
+        path.append(current)
+
+    path.reverse()
+    return path
 
 
 def a_star(app, start, goal):
@@ -101,20 +119,28 @@ def a_star(app, start, goal):
     frontier = PriorityQueue()
     visited = set()
     frontier.put(start, 0)
+    came_from = {}  # To store the parent node for each explored node
+    cost_so_far = {start: 0}  # To store the cost to reach each explored node
+
     while not frontier.empty():
         current = frontier.get()
+
         if current == goal:
-            return
-        visited.add(current)
-        for next in get_neighbors(current):
-            if next not in visited:
-                if next == goal:
-                    app.plot_node(next, color=cf.PATH_C)
-                    app.pause()
-                    return
-                cost = g(next, goal) + h(next, goal)
-                frontier.put(next, cost)
-                set_grid_value(next, get_grid_value(current) + 1)
-                app.plot_node(next, color=cf.PATH_C)
+            # Reconstruct the path and plot it
+            path = reconstruct_path(came_from, start, goal)
+            for node in path:
+                app.plot_node(node, color=cf.FINAL_C)
                 app.pause()
+            return
+
+        visited.add(current)
+
+        for next_node in get_neighbors(current):
+            new_cost = cost_so_far[current] + 1
+            if next_node not in visited and (next_node not in cost_so_far or new_cost < cost_so_far[next_node]):
+                cost_so_far[next_node] = new_cost
+                priority = new_cost + h(next_node, goal)  # A* uses the sum of cost and heuristic as priority
+                frontier.put(next_node, priority)
+                came_from[next_node] = current
+
     return
