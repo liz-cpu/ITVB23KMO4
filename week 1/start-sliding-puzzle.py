@@ -164,7 +164,12 @@ N = int(SIZE**0.5)  # size of row or column, e.g. 3 or 4
 # goal state as a tuple, to to check if we're done
 tuple_goal = tuple(to_list(g))
 
-# path, cost = astar(start)
+print("=======UCS=======")
 path, cost = ucs(start)
+print("nr states visited:", cost)
+print_path(path)
+
+print("=======A*=======")
+path, cost = astar(start)
 print("nr states visited:", cost)
 print_path(path)
