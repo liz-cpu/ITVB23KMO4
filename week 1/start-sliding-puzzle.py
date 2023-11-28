@@ -92,6 +92,32 @@ def astar(start):
 
     return None, 0  # No path found
 
+def ucs(start):
+    # input is a start state (list), returns the path to the goal state
+    # path is a dictionary tuple_state => tuple_parent_state
+
+    frontier = PriorityQueue()
+    frontier.put(start, 0)
+    path = {tuple(start): None}  # dictionary to store the path
+    cost = {tuple(start): 0}  # dictionary to store the cost
+
+    while not frontier.empty():
+        current_state = frontier.get()
+
+        if is_goal(current_state):
+            return path, cost[tuple(current_state)]
+
+        for neighbor_state in neighbors(current_state):
+            new_cost = cost[tuple(current_state)] + 1
+
+            if tuple(neighbor_state) not in cost or new_cost < cost[tuple(neighbor_state)]:
+                cost[tuple(neighbor_state)] = new_cost
+                priority = new_cost
+                frontier.put(neighbor_state, priority)
+                path[tuple(neighbor_state)] = current_state
+
+    return None, 0  # No path found
+
 
 def display(state):
     # input is state (tuple), returns a string representation for printing
@@ -138,6 +164,7 @@ N = int(SIZE**0.5)  # size of row or column, e.g. 3 or 4
 # goal state as a tuple, to to check if we're done
 tuple_goal = tuple(to_list(g))
 
-path, cost = astar(start)
+# path, cost = astar(start)
+path, cost = ucs(start)
 print("nr states visited:", cost)
 print_path(path)
