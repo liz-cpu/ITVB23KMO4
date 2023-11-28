@@ -82,9 +82,13 @@ def ucs(app, start, goal) -> list[tuple[int, int]]:
         visited.add(current)
         for next in get_neighbors(current):
             if next not in visited:
+                if next == goal:
+                    app.plot_node(next, color=cf.PATH_C)
+                    app.pause()
+                    return
                 frontier.put(next, g(next, goal))
                 set_grid_value(next, g(next, goal))
-                app.plot_node(next, color=cf.FINAL_C)
+                app.plot_node(next, color=cf.PATH_C)
                 app.pause()
     return
 
@@ -104,9 +108,13 @@ def a_star(app, start, goal):
         visited.add(current)
         for next in get_neighbors(current):
             if next not in visited:
+                if next == goal:
+                    app.plot_node(next, color=cf.PATH_C)
+                    app.pause()
+                    return
                 cost = g(next, goal) + h(next, goal)
                 frontier.put(next, cost)
                 set_grid_value(next, get_grid_value(current) + 1)
-                app.plot_node(next, color=cf.FINAL_C)
+                app.plot_node(next, color=cf.PATH_C)
                 app.pause()
     return
