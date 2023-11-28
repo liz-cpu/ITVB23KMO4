@@ -44,18 +44,28 @@ def get_neighbors(node):
     neighbors = []
     x, y = node
     for i, j in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
-        if 0 <= x+i < cf.SIZE and 0 <= y+j < cf.SIZE and get_grid_value((x+i, y+j)) != 'b':
-            neighbors.append((x+i, y+j))
+        if (
+            0 <= x + i < cf.SIZE
+            and 0 <= y + j < cf.SIZE
+            and get_grid_value((x + i, y + j)) != "b"
+        ):
+            neighbors.append((x + i, y + j))
     return neighbors
 
 
 def search(app, start, goal):
-    if app.alg.get() == 'UC':
+    if app.alg.get() == "UC":
         return ucs(app, start, goal)
     return a_star(app, start, goal)
 
-def cost(node, goal):
-    return math.sqrt((goal[0]-node[0])**2 + (goal[1]-node[1])**2)
+
+def g(start, goal):
+    return get_grid_value(start) + (get_grid_value(goal) + 1)
+
+
+def h(start, goal):
+    return math.sqrt((start[0] - goal[0]) ** 2 + (start[1] - goal[1]) ** 2)
+
 
 def ucs(app, start, goal) -> list[tuple[int, int]]:
     """
@@ -72,11 +82,12 @@ def ucs(app, start, goal) -> list[tuple[int, int]]:
         visited.add(current)
         for next in get_neighbors(current):
             if next not in visited:
-                frontier.put(next, get_grid_value(current)+1)
-                set_grid_value(next, get_grid_value(current)+1)
+                frontier.put(next, g(next, goal))
+                set_grid_value(next, g(next, goal))
                 app.plot_node(next, color=cf.FINAL_C)
                 app.pause()
     return
+
 
 def a_star(app, start, goal):
     """
@@ -93,8 +104,9 @@ def a_star(app, start, goal):
         visited.add(current)
         for next in get_neighbors(current):
             if next not in visited:
-                frontier.put(next, cost(next, goal))
-                set_grid_value(next, get_grid_value(current)+1)
+                cost = g(next, goal) + h(next, goal)
+                frontier.put(next, cost)
+                set_grid_value(next, get_grid_value(current) + 1)
                 app.plot_node(next, color=cf.FINAL_C)
                 app.pause()
     return
