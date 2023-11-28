@@ -58,11 +58,6 @@ def search(app, start, goal):
         return ucs(app, start, goal)
     return a_star(app, start, goal)
 
-
-def g(start, goal):
-    return get_grid_value(start) + (get_grid_value(goal) + 1)
-
-
 def h(start, goal):
     return math.sqrt((start[0] - goal[0]) ** 2 + (start[1] - goal[1]) ** 2)
 
@@ -142,5 +137,7 @@ def a_star(app, start, goal):
                 priority = new_cost + h(next_node, goal)  # A* uses the sum of cost and heuristic as priority
                 frontier.put(next_node, priority)
                 came_from[next_node] = current
+                app.plot_node(next_node, color=cf.PATH_C)
+                app.pause()
 
     return
