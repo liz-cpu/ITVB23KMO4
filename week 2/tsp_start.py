@@ -90,8 +90,7 @@ def plot_tsp(algorithm: callable, cities: frozenset) -> None:
     print("Start plotting ...")
     plot_tour(tour)
 
-plot_tsp(try_all_tours, make_cities(10))
-plot_tsp(nearest_neighbour, make_cities(10))
+plot_tsp(nearest_neighbour, make_cities(500))
 
 
 """
@@ -108,5 +107,12 @@ Start plotting ...
 Start plotting ...
 
 This is a 14.11% increase in length, but the algorithm is a lot faster.
+
+======
+1b.
+500 city tour with length 19445.9 in 0.031 secs for nearest_neighbour
+
+======
+
 
 """
