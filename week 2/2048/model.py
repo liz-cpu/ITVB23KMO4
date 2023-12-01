@@ -1,27 +1,25 @@
 import random
 import itertools
-import math
 
-MAX_DEPTH = 5
+MAX_DEPTH = 3
 CHANCE = 1
 MAX = 2
 
 def merge_left(b):
     # merge the board left
-    # this is the function that is reused in the other merges
+    # this function is reused in the other merges
     # b = [[0, 2, 4, 4], [0, 2, 4, 8], [0, 0, 0, 4], [2, 2, 2, 2]]    
     def merge(row, acc):
         # recursive helper for merge_left
-
         # if len row == 0, return accumulator
         if not row:
             return acc
 
+        # x = first element
         x = row[0]
         # if len(row) == 1, add element to accumulator
         if len(row) == 1:
             return acc + [x]
-
         # if len(row) >= 2
         if x == row[1]:
             # add row[0] + row[1] to accumulator, continue with row[2:]
@@ -34,7 +32,7 @@ def merge_left(b):
     for row in b:
         # merge row, skip the [0]'s
         merged = merge([x for x in row if x != 0], [])
-        # shift left: add zeros to the right if necessary
+        # add [0]'s to the right if necessary
         merged = merged + [0] * (len(row) - len(merged))
         new_b.append(merged)
     # return [[2, 8, 0, 0], [2, 4, 8, 0], [4, 0, 0, 0], [4, 4, 0, 0]]
@@ -42,28 +40,30 @@ def merge_left(b):
 
 def merge_right(b):
     # merge the board right
-    # strategy: is like merge_left with all rows reversed
     # b = [[0, 2, 4, 4], [0, 2, 4, 8], [0, 0, 0, 4], [2, 2, 2, 2]]
     def reverse(x):
         return list(reversed(x))
 
+    # rev = [[4, 4, 2, 0], [8, 4, 2, 0], [4, 0, 0, 0], [2, 2, 2, 2]]
     rev = [reverse(x) for x in b]
+    # ml = [[8, 2, 0, 0], [8, 4, 2, 0], [4, 0, 0, 0], [4, 4, 0, 0]]
     ml = merge_left(rev)
     # return [[0, 0, 2, 8], [0, 2, 4, 8], [0, 0, 0, 4], [0, 0, 4, 4]]
     return [reverse(x) for x in ml]
 
-
 def merge_up(b):
     # merge the board upward
     # note that zip(*b) is the transpose of b
+    # b = [[0, 2, 4, 4], [0, 2, 4, 8], [0, 0, 0, 4], [2, 2, 2, 2]]
+    # trans = [[2, 0, 0, 0], [4, 2, 0, 0], [8, 2, 0, 0], [4, 8, 4, 2]]
     trans = merge_left(zip(*b))
+    # return [[2, 4, 8, 4], [0, 2, 2, 8], [0, 0, 0, 4], [0, 0, 0, 2]]
     return [list(x) for x in zip(*trans)]
-
 
 def merge_down(b):
     # merge the board downward
-    # note that zip(*b) is the transpose of b
     trans = merge_right(zip(*b))
+    # return [[0, 0, 0, 4], [0, 0, 0, 8], [0, 2, 8, 4], [2, 4, 2, 2]]
     return [list(x) for x in zip(*trans)]
 
 
@@ -123,13 +123,11 @@ def start():
     add_two_four(b)
     return b
 
-
 def play_move(b, direction):
-    # get merge function and apply it to board
+    # get merge functin and apply it to board
     b = MERGE_FUNCTIONS[direction](b)
     add_two_four(b)
     return b
-
 
 def add_two_four(b):
     # add a random tile to the board at open position.
@@ -144,6 +142,15 @@ def add_two_four(b):
             return (b)
         else:
             continue
+            
+def game_state(b):
+    max_tile = 0
+    for i in range(4):
+        for j in range(4):
+            max_tile = max(max_tile, b[i][j])
+    if max_tile >= 2048:
+        return 'win', max_tile
+    return 'lose', max_tile
 
 def test():
     b = [[0, 2, 4, 4], [0, 2, 4, 8], [0, 0, 0, 4], [2, 2, 2, 2]]
@@ -189,6 +196,55 @@ def get_random_move():
     return random.choice(list(MERGE_FUNCTIONS.keys()))
 
 def get_expectimax_move(b):
-    pass
+    return expectimax(b, MAX_DEPTH, "you")[1]
+    return random.choice(list(MERGE_FUNCTIONS.keys()))
 
-#test()
+def expectimax(node, depth, player):
+    value = 0
+
+    flatten = sum(node, [])
+    
+    def copy_node(node):
+        return [row[:] for row in node]
+
+    if depth == 0 or not len(give_moves(node)) > 0:
+        heuristic_score = 0
+        for x, row in enumerate(node):
+            for y, tile in enumerate(row):
+                neighbors = get_neighbors(x, y, node)
+                heuristic_score += (x * tile ** 0.9) * (3 * y * tile ** 0.9) # keep high values in the corner
+                heuristic_score += tile ** 2 if tile in neighbors else 0  # try to get neighbors with same value
+                heuristic_score += tile ** 1.75 if tile / 2 in neighbors else 0  # try to get neighbors with double value
+        heuristic_score += 16 * max(flatten) # try to get a high value tile
+        heuristic_score += 16 * ((flatten.count(0)) ** 1.25 * max(flatten)) # make sure there are many empty tiles
+        return heuristic_score, None
+    
+    if player == "you":
+        bestMove = None
+        for child in list(MERGE_FUNCTIONS.keys()):
+            newMax = max(value, expectimax(MERGE_FUNCTIONS[child](copy_node(node)), depth - 1, "exp")[0])
+            if newMax is not value:
+                bestMove = child
+            value = newMax
+        return value, bestMove
+    else:
+        possible_new_tiles = []
+        for x, row in enumerate(node):
+            for y, tile in enumerate(row):
+                if tile == 0:
+                    newBoards = [copy_node(node) for _ in range(2)]
+                    for i, newBoard in enumerate(newBoards):
+                        newBoard[x][y] = 2 * (i + 1)
+                        possible_new_tiles.append((newBoard, ((0.9 / (9 ** i)) / flatten.count(0))))
+                        possibility = possible_new_tiles[flatten[0:x * len(row) + y].count(0) + i][1]
+                        value = value + (possibility * expectimax(newBoard, depth - 1, "you")[0])
+        return value, None
+
+
+def get_neighbors(x, y, b):
+    return {
+        b[x][y - 1] if y > 0 else None,
+        b[x][y + 1] if y < len(b) - 1 else None,
+        b[x - 1][y] if x > 0 else None,
+        b[x + 1][y] if x < len(b) - 1 else None
+    }
