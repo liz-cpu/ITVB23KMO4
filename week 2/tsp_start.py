@@ -90,7 +90,7 @@ def plot_tsp(algorithm: callable, cities: frozenset) -> None:
     print("Start plotting ...")
     plot_tour(tour)
 
-plot_tsp(nearest_neighbour, make_cities(500))
+plot_tsp(nearest_neighbour, make_cities(50))
 
 
 """
