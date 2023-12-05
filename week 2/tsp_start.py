@@ -88,7 +88,7 @@ def plot_tsp(algorithm, cities):
 
 
 def optimize_tour(tour):
-    segments = [[tour[s % len(tour)], tour[(s + 1) % len(tour)]] for s in range(len(tour))]
+    segments = [[tour[s % len(tour)], tour[(s + 1) % len(tour)]] for s in range(len(tour))] # list of segments
     optimal = False
     while not optimal:
         optimal = True
@@ -96,16 +96,15 @@ def optimize_tour(tour):
             index = segments.index(s)
             # check for intersections and optimize them
             for i in range(index + 1, len(segments)):
-                # if intersected, change around change last with first
+                # if intersected, swap the 2nd city of the 1st segment with the 1st city of the 2nd segment
                 old = distance(s[0], s[1]) + distance(segments[i][0], segments[i][1])
                 new = distance(s[0], segments[i][0]) + distance(segments[i][1], s[1])
                 if old > new:
-                    optimal = False
+                    optimal = False # if there is an intersection, the tour is not optimal
                     s[1], segments[i][0] = segments[i][0], s[1]
                     for sw in segments[index + 1:i]:
                         sw[0], sw[1] = sw[1], sw[0]
-                    segments[index + 1:i] = segments[index + 1:i][::-1]
-                # print(i)
+                    segments[index + 1:i] = segments[index + 1:i][::-1] # reverse the order of the segments
     # sort by connecting 2nd city to 1st city of every segment
     return [s[0] for s in segments]
 
