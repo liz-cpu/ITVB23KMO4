@@ -6,6 +6,7 @@ import math
 from collections import namedtuple
 
 # based on Peter Norvig's IPython Notebook on the TSP
+# Ramon's version
 
 City = namedtuple('City', 'x y')
 
