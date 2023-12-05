@@ -13,8 +13,11 @@ City = namedtuple('City', 'x y')
 def distance(A, B):
     return math.hypot(A.x - B.x, A.y - B.y)
 
-def try_all_tours(cities):
-    # generate and test all possible tours of the cities and choose the shortest tour
+
+def try_all_tours(cities: frozenset) -> list:
+    """
+    Generate and test all tours of the cities and pick the shortest one.
+    """
     tours = alltours(cities)
     print(min(tours, key=tour_length))
     return min(tours, key=tour_length)
@@ -53,6 +56,13 @@ def make_cities(n, width=1000, height=1000):
     random.seed(314)  # the current system time is used as a seed
     # note: if we use the same seed, we get the same set of cities
 
+def make_cities(n: int, width: int = 1000, height: int = 1000):
+    """
+    Makes a set of n cities, each with random coordinates within a rectangle (width x height).
+    The current system time is used as a seed
+    note: if we used the same seed, we'd get the same set of cities
+    """
+    random.seed("hanze")
     return frozenset(City(random.randrange(width), random.randrange(height)) for c in range(n))
 
 
