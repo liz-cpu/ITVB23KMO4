@@ -240,7 +240,7 @@ def any_legal_move(player, board):
 # - Apply it to the board.
 # - Switch players. If the game is over, get the final score.
 
-def play(black_strategy, white_strategy):
+def play(black_strategy: callable, white_strategy: callable):
     """
     Play a game of Othello and return the final board and score.
 
@@ -251,6 +251,17 @@ def play(black_strategy, white_strategy):
     Returns:
         tuple: A tuple containing the final board and score.
     """
+    board = initial_board()
+    player = BLACK
+    strategy = black_strategy if player == BLACK else white_strategy
+    while player is not None:
+        print(print_board(board))
+        move = get_move(strategy, player, board)
+        if move is not None:
+            make_move(move, player, board)
+        player = next_player(board, player)
+    return board, score(BLACK, board)
+
 
 def next_player(board, prev_player):
     """
@@ -263,6 +274,13 @@ def next_player(board, prev_player):
     Returns:
         str or None: The next player or None if no legal moves exist.
     """
+    opp = opponent(prev_player)
+    if any_legal_move(opp, board):
+        return opp
+    elif any_legal_move(prev_player, board):
+        return prev_player
+    return None
+
 
 def get_move(strategy, player, board):
     """
@@ -276,6 +294,12 @@ def get_move(strategy, player, board):
     Returns:
         int: The move obtained from the strategy.
     """
+    copy = list(board)  # copy the board to prevent cheating
+    move = strategy(player, copy)
+    if not is_valid(move) or not is_legal(move, player, board):
+        raise IllegalMoveError(player, move, copy)
+    return move
+
 
 def score(player, board):
     """
@@ -288,3 +312,164 @@ def score(player, board):
     Returns:
         int: The player's score.
     """
+    mine, theirs = 0, 0
+    opp = opponent(player)
+    for sq in squares():
+        piece = board[sq]
+        if piece == player:
+            mine += 1
+        elif piece == opp:
+            theirs += 1
+    return mine - theirs
+
+def play_othello(black_strategy: callable = None, white_strategy: callable = None) -> None:
+    """
+    Play a game of Othello against the computer.
+    """
+    strategies = {
+        BLACK: lambda who, board: random.choice(legal_moves(who, board)) if black_strategy is None else black_strategy(who, board),
+        WHITE: lambda who, board: random.choice(legal_moves(who, board)) if white_strategy is None else white_strategy(who, board)
+    }
+    board, score = play(strategies[BLACK], strategies[WHITE])
+    print_board(board)
+    print('Winner: %s' %
+          ('Black' if score > 0 else 'White' if score < 0 else 'Tie'))
+    print('%s wins by %d points' %
+          (PLAYERS[BLACK] if score > 0 else PLAYERS[WHITE], abs(score)))
+
+play_othello()
+
+class Node:
+    def __init__(self, player, board):
+        self.player = player
+        self.board = board
+
+    def is_terminal(self):
+        return not any_legal_move(self.player, self.board)
+
+    def value(self):
+        return score(self.player, self.board)
+
+    def children(self):
+        for move in legal_moves(self.player, self.board):
+            child_board = list(self.board)
+            make_move(move, self.player, child_board)
+            yield Node(opponent(self.player), child_board)
+
+def minimax(player, board):
+    """
+    Return the move that minimizes the maximum loss for the current player.
+
+    Args:
+        player (str): The current player.
+        board (list): The current board state.
+
+    Returns:
+        int: The move that minimizes the maximum loss.
+    """
+    def min_max(node, depth, max_player):
+        """
+        Minimax algorithm using the score() function as the heuristic.
+        """
+        if depth == 0 or node.is_terminal():
+            return node.value()
+
+        if max_player:
+            value = -math.inf
+            for child in node.children():
+                value = max(value, min_max(child, depth - 1, False))
+            return value
+        else:
+            value = math.inf
+            for child in node.children():
+                value = min(value, min_max(child, depth - 1, True))
+            return value
+
+    return max(legal_moves(player, board), key=lambda move: min_max(Node(player, board), 4, False))
+
+play_othello(minimax, None)
+
+
+def score_diff(player, board):
+    """
+    Compute the score difference (player - opponent) for the given player.
+
+    Args:
+        player (str): The current player.
+        board (list): The current board state.
+
+    Returns:
+        int: The heuristic value of the board for the player.
+    """
+    opp = opponent(player)
+    total = 0
+    for sq in squares():
+        piece = board[sq]
+        if piece == player:
+            total += 1
+        elif piece == opp:
+            total -= 1
+    return total
+
+def mobility(player, board):
+    """
+    Compute the difference in the number of legal moves available to the player and
+    the opponent.
+
+    Args:
+        player (str): The current player.
+        board (list): The current board state.
+
+    Returns:
+        int: The heuristic value of the board for the player.
+    """
+    opp = opponent(player)
+    return len(legal_moves(player, board)) - len(legal_moves(opp, board))
+
+def heuristic(player, board):
+    """
+    Compute the heuristic value of the board for the player.
+
+    Args:
+        player (str): The current player.
+        board (list): The current board state.
+
+    Returns:
+        int: The heuristic value of the board for the player.
+    """
+    return score_diff(player, board) + mobility(player, board)
+
+
+def optimized_minimax(player, board):
+    """
+    Return the move that minimizes the maximum loss for the current player.
+    Optimized using a new heuristic() function (see above)
+
+    Args:
+        player (str): The current player.
+        board (list): The current board state.
+
+    Returns:
+        int: The move that minimizes the maximum loss.
+    """
+    def min_max(node, depth, max_player):
+        """
+        Minimax algorithm using the heuristic() function as the heuristic.
+        """
+        if depth == 0 or node.is_terminal():
+            return heuristic(player, node.board)
+
+        if max_player:
+            value = -math.inf
+            for child in node.children():
+                value = max(value, min_max(child, depth - 1, False))
+            return value
+        else:
+            value = math.inf
+            for child in node.children():
+                value = min(value, min_max(child, depth - 1, True))
+            return value
+
+    return max(legal_moves(player, board), key=lambda move: min_max(Node(player, board), 4, False))
+
+play_othello(optimized_minimax, None)
