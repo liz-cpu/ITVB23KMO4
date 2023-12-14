@@ -26,15 +26,19 @@ Questions regarding variables:
 
 Questions regarding constraints:
     a. What are the binary constraints, and how many are there?
+
     b. How can you represent the binary constraint in code?
+
     c. What does it mean for a value for a variable to be 'arc-consistent'?
+
     d. How meaningful is it to apply arc-consistency?
+
 
     Is it possible to find all solutions?
 """
 
 import os
-import itertools 
+import itertools
 
 def load_words() -> set:
     """
