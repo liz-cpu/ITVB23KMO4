@@ -1,5 +1,5 @@
 """
-TASK 2: CROSSWORD PUZZLE
+# TASK 2: CROSSWORD PUZZLE
 
 Below is a grid for a crossword puzzle. The goal is to fill the grid with words
 to generate a crossword puzzle. Also given is a list of words that can be used.
@@ -26,15 +26,52 @@ Questions regarding variables:
 
 Questions regarding constraints:
     a. What are the binary constraints, and how many are there?
-
+        > The binary constraints are the size of the words, which are given
+        > in the grid.
     b. How can you represent the binary constraint in code?
-
+        > The binary constraints can be represented as a dictionary with the
+        > size of the words as keys and the words as values. These words in
+        > turn can be represented as a set, because the order of the words
+        > does not matter.
+        > I think that the domain here qualifies as how you would represent
+        > these, but I am not sure.
     c. What does it mean for a value for a variable to be 'arc-consistent'?
-
+        > A value for a variable is arc-consistent if it is consistent with
+        > the constraints of the other variables. Consider yourself to be
+        > solving a jig-saw puzzle. If you have a piece that has a straight
+        > edge, you can already rule out all pieces that do not have a
+        > straight edge. This is because the straight edge is consistent with
+        > the constraints of the other pieces.
+        > This is an example of arc-consistency because you are ruling out
+        > values for a variable based on the constraints of the other
+        > variables.
     d. How meaningful is it to apply arc-consistency?
+        > It is very meaningful to apply arc-consistency when solving crossword
+        > puzzles like this one. This is because you can rule out a lot of
+        > words that do not fit the constraints of the other words. You can
+        > for example rule out all words that do not have a certain letter
+        > at a certain position if you already know the letter at that
+        > position for another word. Similarly, you can rule out all words
+        > that do not fit the length of the word that you are trying to
+        > solve.
 
 
-    Is it possible to find all solutions?
+    3. Is it possible to find all solutions?
+        > Yes, it is possible to find all solutions. This is because the
+        > constraints are very strict, and there are only 6 variables. This
+        > means that the search tree is not very large, and it is possible
+        > to search through the entire tree withing a reasonable amount of
+        > time.
+
+Write a program that, given a list of words, fills the grid with appropriate
+words so that all constraints are met. It is convenient to first process the
+list of words into data structures that represent the different domains.
+The program only needs to generate words for this specific grid, so a generic
+setup is not required. There are many solutions, but showing one is sufficient.
+
+On Blackboard, you can find the file start_x_word_puzzle.py, which provides
+some suggestions on how to approach it. Note that you can view it as one
+grid, but also as two independent grids.
 """
 
 import os
@@ -71,37 +108,37 @@ def make_domain() -> dict:
     return domain
 
 
-def valid(key, a):
-    # key = variable, a is a dict var:value, where value is a word but can be None
-    match key:
-        case 1:
-            pass
-        case 2:
-            pass
-        case 3:
-            pass
-        case 4:
-            pass
-        case 5:
-            pass
-        case 6:
-            pass
-        case 7:
-            pass
-        case 8:
-            pass
-        case 9:
-            pass
-        case 10:
-            pass
-        case 11:
-            pass
-    return False
+def valid(key: int, a: dict):
+    """
+    Check if a[key] is valid, given the constraints of the other variables.
+    `a` is a dictionary variable:value, where value is a word but could be None.
+
+    :param key: The variable to check 
+    :type key: int
+    :param a: _description_
+    :type a: _type_
+    :return: _description_
+    :rtype: _type_
+    """
+    return a[key]
 
 
 def make_arc_consistent(domain, a, key):
+    """
+    Make variable x arc consistent with variable y. Meaning: if words x and y
+    overlap, and if word x = a[key] has no match in y.domain, then remove
+    word x from x.domain.
+
+    :param domain: _description_
+    :type domain: _type_
+    :param a: _description_
+    :type a: _type_
+    :param key: _description_
+    :type key: _type_
+    """
     # make variable x arc consistent with variable y
-    # meaning: if words x and y overlap, and if word x = a[key] has no match in y.domain,
+    # meaning: if words x and y overlap, and if word x = a[key] has no match in
+    # y.domain,
     pass
 
 
