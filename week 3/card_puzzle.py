@@ -71,6 +71,8 @@ Assume 5 is an Ace.
 
 """
 
+from copy import deepcopy
+
 import colorama
 colorama.init()
 
@@ -121,7 +123,6 @@ def pring(any):
 
 
 def is_valid(board):
-    print("-------------------------------------------------------------")
     print_board(board)
     count = {"A": 0, "K": 0, "Q": 0, "J": 0}
 
@@ -133,13 +134,16 @@ def is_valid(board):
         princ(f"Checking card {card}")
 
         count[card] += 1
-        nya = constraints[card]['yes']
+        nya = deepcopy(constraints[card]['yes'])
         meow = len(nya)
 
         for neighbor in neighbors[i]:
             priny(f"Checking neighbor {neighbor}")
 
-            if board[neighbor] in constraints[card]['no'] or board[neighbor] == card:
+            if board[neighbor] in constraints[card]['no']:
+                return False
+
+            if board[neighbor] == card:
                 return False
 
             if board[neighbor] in nya:
