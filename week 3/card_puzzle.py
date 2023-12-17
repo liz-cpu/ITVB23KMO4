@@ -72,6 +72,7 @@ Assume 5 is an Ace.
 """
 
 from copy import deepcopy
+from itertools import permutations
 
 import colorama
 colorama.init()
@@ -123,7 +124,7 @@ def pring(any):
 
 
 def is_valid(board):
-    print_board(board)
+    # print_board(board)
     count = {"A": 0, "K": 0, "Q": 0, "J": 0}
 
     for i in range(len(board)):
@@ -131,14 +132,14 @@ def is_valid(board):
         if card == '.':
             continue
 
-        princ(f"Checking card {card}")
+        # princ(f"Checking card {card}")
 
         count[card] += 1
         nya = deepcopy(constraints[card]['yes'])
         meow = len(nya)
 
         for neighbor in neighbors[i]:
-            priny(f"Checking neighbor {neighbor}")
+            # priny(f"Checking neighbor {neighbor}")
 
             if board[neighbor] in constraints[card]['no']:
                 return False
@@ -158,6 +159,15 @@ def is_valid(board):
 
     return True if all(count[card] <= 2 for card in count) else False
 
+
+def solve_brute_force(board, cards):
+    for permutation in permutations(cards):
+        board = deepcopy(board)
+        for i in range(len(permutation)):
+            board[i] = permutation[i]
+        if is_valid(board):
+            print_board(board)
+            return
 
 def test():
     tru = colorama.Fore.GREEN + 'True' + colorama.Fore.RESET
@@ -189,4 +199,10 @@ def test():
           3: '.', 4: '.', 5: '.', 6: '.', 7: '.'}))
 
 
-test()
+def test_brute_force():
+    board_test = {0: 'Q', 1: 'Q', 2: '.',
+          3: '.', 4: '.', 5: '.', 6: '.', 7: '.'}
+    cards_test = ['K', 'K', 'Q', 'Q', 'J', 'J', 'A', 'A']
+    solve_brute_force(board_test, cards_test)
+
+test_brute_force()
