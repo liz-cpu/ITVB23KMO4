@@ -160,14 +160,27 @@ def is_valid(board):
     return True if all(count[card] <= 2 for card in count) else False
 
 
-def solve_brute_force(board, cards):
-    for permutation in permutations(cards):
-        board = deepcopy(board)
-        for i in range(len(permutation)):
-            board[i] = permutation[i]
-        if is_valid(board):
-            print_board(board)
+def solve_brute_force(board: dict, cards: list):
+    board = deepcopy(board)
+    cards = [card for card in cards if card not in board.values()]
+    indices = [i for i in board.keys() if board.get(i) == '.']
+    if len(indices) == 0:
+        print_board(board)
+        return
+    given = {key: value for key, value in board.items() if value != '.'}
+
+    perms = permutations(cards, len(indices))
+
+    for perm in perms:
+
+        new_board = {i: perm[imdex] for imdex, i in enumerate(indices)}
+        new_board.update(given)
+        princ(new_board)
+        if is_valid(new_board):
+            print_board(new_board)
             return
+    prinr("No solution found")
+
 
 def test():
     tru = colorama.Fore.GREEN + 'True' + colorama.Fore.RESET
@@ -204,5 +217,8 @@ def test_brute_force():
           3: '.', 4: '.', 5: '.', 6: '.', 7: '.'}
     cards_test = ['K', 'K', 'Q', 'Q', 'J', 'J', 'A', 'A']
     solve_brute_force(board_test, cards_test)
+    # board_test = {0: 'J', 1: '.', 2: '.',
+    #       3: '.', 4: '.', 5: '.', 6: '.', 7: '.'}
+    # solve_brute_force(board_test, cards_test)
 
 test_brute_force()
