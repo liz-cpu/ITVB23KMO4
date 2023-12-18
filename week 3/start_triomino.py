@@ -55,8 +55,20 @@ def prepare(mx):
     print()
 
     def find_ones(rows):
-        # returns indexes in rows where the ondes are
-        # example: [[0, 3], [1, 3], [1, 2], [2]]
+        """Returns indexes in rows where the ones are
+
+        For example, given the following matrix:
+        [[1, 0, 0, 1],
+        [0, 1, 1, 1],
+        [0, 1, 1, 0],
+        [1, 0, 0, 0]]
+
+        The function will return, if rows is given as input:
+        [[0, 3], [1, 2, 3], [1, 2], [0]]
+
+        :return: A list of lists, where each list contains the indexes of the ones in that row
+        :rtype: list[list[int]]
+        """
         lv_row_has_1_at = []
         for row in rows:
             x = []
@@ -82,12 +94,13 @@ def prepare(mx):
     return halt_fl, row_valid, col_valid, row_has_1_at, col_has_1_at
 
 def cover(r, row_valid, col_valid, row_has_1_at, col_has_1_at):
-    # given a row r:
-    #   cover all cols that have a 1 in row r
-    #   cover all rows r' that intersect/overlap with row r
-    # returns row_valid, col_valid
-
-    pass
+    # cover row r
+    row_valid[r] = 0
+    for c in row_has_1_at[r]:
+        col_valid[c] = 0
+        for r2 in col_has_1_at[c]:
+            row_valid[r2] = 0
+    return row_valid, col_valid
 
 def print_solution(solution, row_has_1_at):
     # place triominoes in matrix D 3 rows x 4 cols
@@ -110,12 +123,33 @@ def print_solution(solution, row_has_1_at):
         print(i)
 
 def solve(row_valid, col_valid, row_has_1_at, col_has_1_at, solution):
-    # using Algoritm X, find all solutions (= set of rows) given valid/uncovered rows and cols
-    pass
+    """_summary_
 
+    :param row_valid: List of 1's and 0's. 1 means row is valid, 0 means row is invalid
+    :type row_valid: list[bool]
+    :param col_valid: List of 1's and 0's. 1 means col is valid, 0 means col is invalid
+    :type col_valid: list[bool]
+    :param row_has_1_at: List of lists. Each list contains the indexes of the ones in that row
+    :type row_has_1_at: list[list[int]]
+    :type row_has_1_at: list[list[int]]
+    :param col_has_1_at: List of lists. Each list contains the indexes of the ones in that col
+    :type col_has_1_at: list[list[int]]
+    :param solution: List of rows that are part of the solution
+    :type solution: list[int]
+    """
+
+    for row in range(len(row_valid)):
+        if row_valid[row]:
+            row_valid2, col_valid2 = cover(row, row_valid.copy(), col_valid.copy(), row_has_1_at, col_has_1_at)
+            solution2 = solution.copy()
+            solution2.append(row)
+            if sum(row_valid2) == 0:
+                print_solution(solution2, row_has_1_at)
+            else:
+                solve(row_valid2, col_valid2, row_has_1_at, col_has_1_at, solution2)
 
 mx = make_matrix(triominoes)
 
 halt_fl, row_valid, col_valid, row_has_1_at, col_has_1_at = prepare(mx)
 if not halt_fl:
-    solve(row_valid, col_valid, row_has_1_at, col_has_1_at, [])
+    sv = solve(row_valid, col_valid, row_has_1_at, col_has_1_at, [])

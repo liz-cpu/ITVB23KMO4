@@ -126,38 +126,10 @@ def pring(any):
 def is_valid(board):
     # print_board(board)
     count = {"A": 0, "K": 0, "Q": 0, "J": 0}
+    stack = ["A", "A", "K", "K", "Q", "Q", "J", "J"]  # stack of cards
 
     for i in range(len(board)):
-        card = board[i]
-        if card == '.':
-            continue
-
-        # princ(f"Checking card {card}")
-
-        count[card] += 1
-        nya = deepcopy(constraints[card]['yes'])
-        meow = len(nya)
-
-        for neighbor in neighbors[i]:
-            # priny(f"Checking neighbor {neighbor}")
-
-            if board[neighbor] in constraints[card]['no']:
-                return False
-
-            if board[neighbor] == card:
-                return False
-
-            if board[neighbor] in nya:
-                nya.remove(board[neighbor])
-                meow -= 1
-
-            if board[neighbor] == '.':
-                meow -= 1
-
-        if meow > 0:
-            return False
-
-    return True if all(count[card] <= 2 for card in count) else False
+        
 
 
 def solve_brute_force(board: dict, cards: list):
@@ -175,7 +147,7 @@ def solve_brute_force(board: dict, cards: list):
 
         new_board = {i: perm[imdex] for imdex, i in enumerate(indices)}
         new_board.update(given)
-        princ(new_board)
+        print_board(new_board)
         if is_valid(new_board):
             print_board(new_board)
             return
