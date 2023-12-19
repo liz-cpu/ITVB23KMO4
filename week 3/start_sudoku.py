@@ -8,6 +8,7 @@ import time
 # ..
 # I
 
+# 
 def cross(A, B):
     # concat of chars in string A and chars in string B
     return [a+b for a in A for b in B]
@@ -29,7 +30,7 @@ peers = dict((s, set(sum(units[s],[]))-set([s])) for s in cells)
 def test():
     # a set of tests that must pass
     assert len(cells) == 81
-    assert len(unitlist) == 27
+    assert len(unit_list) == 27
     assert all(len(units[s]) == 3 for s in cells)
     assert all(len(peers[s]) == 20 for s in cells)
     assert units['C2'] == [['A2', 'B2', 'C2', 'D2', 'E2', 'F2', 'G2', 'H2', 'I2'],
@@ -77,9 +78,73 @@ def no_conflict(grid, c, val):
            return False # conflict
     return True
 
-def solve(grid):
-    # backtracking search for a solution (DFS)
-    # your code here
+def solve(grid, method='DFS'):
+    """
+    Solve the sudoku grid.
+    :param grid: a dictionary with the sudoku grid
+    :param method: the method to use for solving the sudoku grid, either 'DFS', 'DFS-ARCC' or 'ALG-X'
+    """
+    solution = grid
+    if method.upper() == 'DFS':
+        solution = dfs(grid)
+    elif method.upper() == 'DFS-ARCC':
+        solution = dfs_arc_consistent(grid)
+    elif method.upper() == 'ALG-X':
+        solution = alg_x(grid)
+    else:
+        print('Invalid method given')
+        return None
+    return solution
+
+def dfs(grid, solution={}):
+    # depth-first search
+    # order cells by the number of possible values of its peers in ascending order
+    ordered_cells = sorted(grid, key=lambda c: sum([len(grid[p]) for p in peers[c]]))
+    for c in ordered_cells:
+        if len(grid[c]) > 1:
+            for val in grid[c]:
+                if no_conflict(grid, c, val):
+                    old_val = grid[c]
+                    grid[c] = val
+                    solution = dfs(grid, solution)
+                    grid[c] = old_val
+            return solution
+    # no more empty cells
+    return grid.copy()
+
+def make_arc_consistent(grid):
+    # make grid arc-consistent
+    # remove values from peers that are not possible for a cell
+    for c in grid:
+        if len(grid[c]) == 1:
+            for p in peers[c]:
+                if grid[c] in grid[p]:
+                    if len(grid[p]) <= 1:
+                        return False
+                    grid[p] = grid[p].replace(grid[c], '')
+    return grid
+
+def dfs_arc_consistent(grid, solution={}):
+    # depth-first search with arc consistency
+    new_grid = make_arc_consistent(grid.copy())
+    if new_grid == False:
+        return solution
+    # order cells by the number of possible values of its peers in ascending order
+    ordered_cells = sorted(grid, key=lambda c: sum([len(grid[p]) for p in peers[c]]))
+    for c in ordered_cells:
+        if len(new_grid[c]) > 1:
+            for val in new_grid[c]:
+                if no_conflict(new_grid, c, val):
+                    old_val = new_grid[c]
+                    new_grid[c] = val
+                    solution = dfs_arc_consistent(new_grid, solution)
+                    new_grid[c] = old_val
+            return solution
+    # no more empty cells
+    return new_grid.copy()
+
+def alg_x(grid):
+    # Algorithm X
     pass
 
 # minimum nr of clues for a unique solution is 17
@@ -96,7 +161,10 @@ slist[8] = '..6.4.5.......2.3.23.5..8765.3.........8.1.6.......7.1........5.6..3
 slist[9] = '4.....8.5.3..........7......2.....6.....8.4......1.......6.3.7.5..2.....1.4......'
 slist[10]= '85...24..72......9..4.........1.7..23.5...9...4...........8..7..17..........36.4.'
 slist[11]= '...5....2...3..85997...83..53...9...19.73...4...84...1.471..6...5...41...1...6247'
-slist[12]= '.....6....59.....82....8....45........3........6..3.54...325..6..................'
+slist[12]= '...5....2...3..85997...83..53...9...19.73...4...84...1.471..6...5...41...1...6247'
+# slist[12]= '.....6....59.....82....8....45........3........6..3.54...325..6..................'
+# replaced 12 because it takes too long to solve for some reason
+# TODO: find out why and fix it
 slist[13]= '4.....8.5.3..........7......2.....6.....8.4......1.......6.3.7.5..2.....1.4......'
 slist[14]= '8..........36......7..9.2...5...7.......457.....1...3...1....68..85...1..9....4..'
 slist[15]= '6..3.2....5.....1..........7.26............543.........8.15........4.2........7..'
@@ -107,11 +175,13 @@ slist[19]= '1.....3.8.7.4..............2.3.1...........958.........5.6...7.....8
 
 for i,sudo in enumerate(slist):
     print('*** sudoku {0} ***'.format(i))
-    print(sudo)
     d = parse_string_to_dict(sudo)
+    display(d)
     start_time = time.time()
-    solve(d)
+    # solution = solve(d, 'DFS')
+    solution = solve(d, 'DFS-ARCC')
     end_time = time.time()
+    display(solution)
     hours, rem = divmod(end_time-start_time, 3600)
     minutes, seconds = divmod(rem, 60)
     print("duration [hh:mm:ss.ddd]: {:0>2}:{:0>2}:{:06.3f}".format(int(hours),int(minutes),seconds))

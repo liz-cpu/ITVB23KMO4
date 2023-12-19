@@ -112,7 +112,7 @@ def print_solution(solution, row_has_1_at):
     for i in D:
         print(i)
 
-def solve(row_valid, col_valid, row_has_1_at, col_has_1_at, solution):
+def solve(row_valid, col_valid, row_has_1_at, col_has_1_at, solution=[]):
     # using Algoritm X, find all solutions (= set of rows) given valid/uncovered rows and cols
     # find column with fewest ones
     min_ones = NR_OF_ROWS + 1
@@ -140,4 +140,4 @@ mx = make_matrix(triominoes)
 
 halt_fl, row_valid, col_valid, row_has_1_at, col_has_1_at = prepare(mx)
 if not halt_fl:
-    solve(row_valid, col_valid, row_has_1_at, col_has_1_at, [])
+    solve(row_valid, col_valid, row_has_1_at, col_has_1_at)
