@@ -138,7 +138,7 @@ def make_arc_consistent(domain, a, key):
     """
     # make variable x arc consistent with variable y
     # meaning: if words x and y overlap, and if word x = a[key] has no match in
-    # y.domain,
+    #  y.domain,
     pass
 
 
