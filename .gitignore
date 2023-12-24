@@ -1,3 +1,7 @@
 *.pyc
 __pycache__/
 venv/
+*.zip
+*.rar
+*.gz
+*.7z
