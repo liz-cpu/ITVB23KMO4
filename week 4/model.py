@@ -2,14 +2,17 @@ import random
 
 import config as cf
 
-# Global variable
-grid: list[list[int]] = [[0 for x in range(cf.SIZE)] for y in range(cf.SIZE)]
+grid = [[0 for x in range(cf.SIZE)] for y in range(cf.SIZE)]
 
 """
-(x, y) = (0, 0) is the top left of the grid
+top left of the grid is (0, 0)
 
-a state (x, y, action) is a combination of current position (x,y) and last/previous action
+a state (x, y, action) is a combination of current position (x,y) and
+last/previous action
 where: 0 <= x,y <= cf.SIZE - 1 and action is one of {'L', 'R', 'U', 'D', 'S'}
+("L"eft, "R"ight, "U"p, "D"own, "S"tay)
+
+standard 2d list indexing
 """
 
 
@@ -17,24 +20,24 @@ class Distribution(dict):
     """
     The Distribution class extends a Python dictionary.
 
-    Methods:
-    - __missing__: Returns probability 0 if the key is missing.
-    - renormalize: Scales all the probabilities so that they sum up to 1.
+    :extends: dict
     """
 
-    def __missing__(self, key: tuple[int, int, str]) -> float:
+    def __missing__(self, key: str) -> int:
         """
-        Returns probability 0 if the key is missing.
+        If the key is missing, return probability 0.
 
-        :param tuple[int, int, str] key: The key to check.
-        :return: The probability (always 0).
-        :rtype: float
+        :param key: The key to check.
+        :type key: str
+        :return: The probability of the key.
+        :rtype: int
         """
         return 0
 
-    def renormalize(self) -> None:
+    def renormalize(self):
         """
-        Scales all the probabilities so that they sum up to 1.
+        Scale all the probabilities so that they sum up to 1.
+        Renormalization is necessary for positions at borders/in corners.
         """
         normalization_constant = sum(self.values())
         for key in self.keys():
@@ -43,23 +46,24 @@ class Distribution(dict):
 
 def get_all_states() -> list[tuple[int, int, str]]:
     """
-    Returns a list of all possible states (position and previous action).
+    Returns a (long) list of all possible states (position and previous action) ex. (7, 7, 'S').
+    We need this in Viterbi (1065 states).
 
-    :return: list of all possible states.
+    :return: A list of all possible states.
     :rtype: list[tuple[int, int, str]]
     """
-    all_states = []
+    all_states: list[tuple[int, int, str]] = []
     for x in range(cf.SIZE):
         for y in range(cf.SIZE):
             possible_prev_actions = ['L', 'R', 'U', 'D', 'S']
 
-            if x == 0:
+            if x == 0:  # previous action could not have been to go right
                 possible_prev_actions.remove('R')
-            if x == cf.SIZE - 1:
+            if x == cf.SIZE - 1:  # could not have gone left
                 possible_prev_actions.remove('L')
-            if y == 0:
+            if y == 0:  # could not have gone down
                 possible_prev_actions.remove('D')
-            if y == cf.SIZE - 1:
+            if y == cf.SIZE - 1:  # could not have gone up
                 possible_prev_actions.remove('U')
 
             for action in possible_prev_actions:
@@ -69,18 +73,18 @@ def get_all_states() -> list[tuple[int, int, str]]:
 
 def transition_model(state: tuple[int, int, str]) -> Distribution:
     """
-    Given a state (position and previous action), return a distribution for possible next states.
+    Given a state (position and previous action),
+    return a dict with keys = possible next states and values = probabilities.
+    Example output: {(7, 7, 'S'): 0.2,
+                     (7, 6, 'U'): 0.2,
+                     (7, 8, 'D'): 0.2,
+                     (6, 7, 'L'): 0.2,
+                     (8, 7, 'R'): 0.2}.
+    Note: top left position is (0,0).
 
-    Example output: {
-        (7, 7, 'S'): 0.2,
-        (7, 6, 'U'): 0.2,
-        (7, 8, 'D'): 0.2,
-        (6, 7, 'L'): 0.2,
-        (8, 7, 'R'): 0.2
-    }
-
-    :param tuple[int, int, str] state: Current state (position and previous action).
-    :return: Distribution of possible next states and their probabilities.
+    :param state: The state to check.
+    :type state: tuple[int, int, str]
+    :return: A dictionary of possible next states and their probabilities.
     :rtype: Distribution
     """
     x, y, action = state
@@ -88,32 +92,65 @@ def transition_model(state: tuple[int, int, str]) -> Distribution:
     possible_moves = [('S', 0, 0), ('L', -1, 0),
                       ('R', 1, 0), ('U', 0, -1), ('D', 0, 1)]
 
-    for move, hor_mov, vert_move in possible_moves:
-        next_x = x + hor_mov
-        next_y = y + vert_move
+    for move, horizontal_move, vertical_move in possible_moves:
+        next_x = x + horizontal_move
+        next_y = y + vertical_move
 
-        if (0 <= next_x < cf.SIZE) and (0 <= next_y < cf.SIZE):
-            if action == 'S':
-                distr_next_states[(next_x, next_y, move)] = 0.2
-            elif move == 'S':
-                distr_next_states[(next_x, next_y, move)] = 0.1
-            elif action == move:
-                distr_next_states[(next_x, next_y, move)] = 0.9
+        if (next_x >= 0) and (next_x < cf.SIZE) and (next_y >= 0) and (next_y < cf.SIZE):
+            if action == 'S':  # previous move was stay, 0.2 prob for all possible moves/stay
+                distr_next_states[(next_x, next_y, move)] = .2
+            elif move == 'S':  # previous move was a displacement, so prob for stay = 0.1
+                distr_next_states[(next_x, next_y, move)] = .1
+            elif action == move:  # previous move is same as next move, prob = 0.9
+                distr_next_states[(next_x, next_y, move)] = .9
 
+    # if were at border or in corner then renormalize
     distr_next_states.renormalize()
     return distr_next_states
 
 
-def get_next_state(distr_next_states) -> None:
-    pass
+"""
+decoding: given an observation sequence, what is the most likely hidden
+state sequence (that best explains the observations)
+• or: what is the most likely path in the trellis
+• can be used to give meaning to 'noisy' or uncertain observations
+• examples: interpreting a language, determining the path of a robot
+• given a sequence of ice-cream observations 3 1 3 and an HMM, the task of
+the decoder is to find the most likely hidden weather sequence
+• the Viterbi algorithm finds the most likely sequence of hidden states, called
+the Viterbi path, given a sequence of observations in an HMM
+• it is one of the most important and basic algorithms in the field of information
+technology
+• the original application was in signal decoding but has since been used in numerous
+other applications (including speech recognition, language parsing and bio-
+informatics)
+
+
+"""
+
+
+def get_next_state(distr_next_states) -> tuple[int, int, str]:
+    """
+    Given a distribution of next states, return the next state based on the
+    probabilities.
+
+    :param distr_next_states: The distribution of next states.
+    :type distr_next_states: Distribution
+    :return: The next state.
+    :rtype: tuple[int, int, str]
+    """
+
+    return max(distr_next_states, key=distr_next_states.get)
 
 
 def observation_model(state: tuple[int, int, str]) -> Distribution:
     """
-    Given a state, return the distribution for its observations (positions).
+    Given a state, return the distribution for its observations = positions.
+    Example: state=(5, 4, 'S') returns {(5, 4): 0.2, (4, 4): 0.2, (6, 4): 0.2, (5, 3): 0.2, (5, 5): 0.2}.
 
-    :param tuple[int, int, str] state: Current state.
-    :return: Distribution of possible observed positions and their probabilities.
+    :param state: The state to check.
+    :type state: tuple[int, int, str]
+    :return: The distribution for the state's observations.
     :rtype: Distribution
     """
     x, y, action = state
@@ -122,25 +159,63 @@ def observation_model(state: tuple[int, int, str]) -> Distribution:
                          (1, 0, 0.2), (0, -1, 0.2), (0, 1, 0.2)]
 
     for dx, dy, prob in observation_probs:
-        if (0 <= x + dx < cf.SIZE) and (0 <= y + dy < cf.SIZE):
+        if (x + dx >= 0) and (x + dx < cf.SIZE) and (y + dy >= 0) and (y + dy < cf.SIZE):
             observed_states[(x + dx, y + dy)] = prob
 
     observed_states.renormalize()
     return observed_states
 
 
-def viterbi(all_possible_states, observations):
-    pass
-
-
-def load_data(filename: str) -> tuple[list, list]:
+def Viterbi(all_possible_states: list[tuple[int, int, str]], observations: list[tuple[int, int]]) -> list[tuple[int, int, str]]:
     """
-    Loads data from a file and returns states and observed path.
+    Given a list of all possible states and a list of observations,
+    return the most likely path (list of states) that explains the observations.
 
-    :param str filename: Name of the file.
-    :return: tuple containing lists of states and observed path.
-    :rtype: tuple[list[tuple[int, int, str]], list[Optional[tuple[int, int]]]]
+    :param all_possible_states: A list of all possible states.
+    :type all_possible_states: list[tuple[int, int, str]]
+    :param observations: A list of observations.
+    :type observations: list[tuple[int, int]]
+    :return: The most likely path that explains the observations.
+    :rtype: list[tuple[int, int, str]]
     """
+    max_prob_matrix = [[0 for x in range(len(observations))] for y in range(
+        len(all_possible_states))]
+    backpointer_matrix = [
+        [0 for x in range(len(observations))] for y in range(len(all_possible_states))]
+
+    for i, state in enumerate(all_possible_states):
+        x, y, action = state
+        max_prob_matrix[i][0] = transition_model(
+            state)[(x, y, action)] * observation_model(state)[observations[0]]
+        backpointer_matrix[i][0] = 0
+
+    for t in range(1, len(observations)):
+        for i, state in enumerate(all_possible_states):
+            x, y, action = state
+            # Calculate the max probability for each state
+            max_prob_matrix[i][t] = max([max_prob_matrix[j][t - 1] * transition_model(state)[all_possible_states[j]]
+                                        * observation_model(state)[observations[t]] for j in range(len(all_possible_states))])
+            backpointer_matrix[i][t] = max([max_prob_matrix[j][t - 1] * transition_model(state)[
+                                           all_possible_states[j]] * observation_model(state)[observations[t]] for j in range(len(all_possible_states))])
+
+    max_prob = max([max_prob_matrix[i][len(observations) - 1]
+                   for i in range(len(all_possible_states))])
+
+    for i in range(len(all_possible_states)):
+        if max_prob_matrix[i][len(observations) - 1] == max_prob:
+            max_prob_index = i
+
+    path = [all_possible_states[max_prob_index]]
+
+    for t in range(len(observations) - 1, 0, -1):
+        path.insert(
+            0, all_possible_states[backpointer_matrix[max_prob_index][t]])
+        max_prob_index = backpointer_matrix[max_prob_index][t]
+
+    return path
+
+
+def load_data(filename):
     states = []
     observed_path = []
 
@@ -153,11 +228,13 @@ def load_data(filename: str) -> tuple[list, list]:
 
             prev_action = parts[0]
 
+            # get real position
             string_xy = parts[1].split(',')
             real_x = int(string_xy[0])
             real_y = int(string_xy[1])
             states.append((real_x, real_y, prev_action))
 
+            # get observed position
             if parts[2] == 'missing':
                 observed_path.append(None)
             else:
@@ -169,23 +246,21 @@ def load_data(filename: str) -> tuple[list, list]:
     return states, observed_path
 
 
-def move_robot(app: any, start: tuple[int, int]) -> None:
-    """
-    Plots a fully random path for demonstration.
-
-    :param any app: Application object.
-    :param tuple[int, int] start: Initial position.
+def move_robot(app, start):
+    # plot a fully random path for demonstration
+    # start[0]=x and start[1]=y
     """
     prev = start
     for i in range(100):
-        direction = random.choice(['L', 'R', 'U', 'D'])
-        match direction:
-            case 'L': current = prev[0] - 1, prev[1]
-            case 'R': current = prev[0] + 1, prev[1]
-            case 'D': current = prev[0], prev[1] - 1
-            case 'U': current = prev[0], prev[1] + 1
+        dir = random.choice(['L', 'R', 'U', 'D'])
+        match dir:
+            case 'L': current = prev[0]-1, prev[1]
+            case 'R': current = prev[0]+1, prev[1]
+            case 'D': current = prev[0], prev[1]-1
+            case 'U': current = prev[0], prev[1]+1
 
-        if (0 <= current[0] <= cf.SIZE - 1) and (0 <= current[1] <= cf.SIZE - 1):
+        # check if new position is valid
+        if (current[0] >= 0 and current[0] <= cf.SIZE-1 and current[1] >= 0 and current[1] <= cf.SIZE-1):
             app.plot_line_segment(
                 prev[0], prev[1], current[0], current[1], color=cf.ROBOT_C)
             app.pause()
@@ -195,3 +270,21 @@ def move_robot(app: any, start: tuple[int, int]) -> None:
             app.pause()
 
     app.plot_node(current, color=cf.ROBOT_C)
+    """
+
+    # plot a path based on the Viterbi algorithm
+    all_possible_states = get_all_states()
+    observations = load_data('observations_v2.txt')[1]
+    path = Viterbi(all_possible_states, observations)
+
+    prev = start
+    for state in path:
+        app.plot_line_segment(prev[0], prev[1], state[0],
+                              state[1], color=cf.ROBOT_C)
+        app.pause()
+        app.plot_line_segment(prev[0], prev[1], state[0],
+                              state[1], color=cf.PATH_C)
+        prev = state
+        app.pause()
+
+    app.plot_node(prev, color=cf.ROBOT_C)
