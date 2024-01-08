@@ -178,41 +178,41 @@ def Viterbi(all_possible_states: list[tuple[int, int, str]], observations: list[
     :return: The most likely path that explains the observations.
     :rtype: list[tuple[int, int, str]]
     """
-    max_prob_matrix = [[0 for x in range(len(observations))] for y in range(
-        len(all_possible_states))]
-    backpointer_matrix = [
-        [0 for x in range(len(observations))] for y in range(len(all_possible_states))]
+    # max_prob_matrix = [[0 for x in range(len(observations))] for y in range(
+    #     len(all_possible_states))]
+    # backpointer_matrix = [
+    #     [0 for x in range(len(observations))] for y in range(len(all_possible_states))]
 
-    for i, state in enumerate(all_possible_states):
-        x, y, action = state
-        max_prob_matrix[i][0] = transition_model(
-            state)[(x, y, action)] * observation_model(state)[observations[0]]
-        backpointer_matrix[i][0] = 0
+    # for i, state in enumerate(all_possible_states):
+    #     x, y, action = state
+    #     max_prob_matrix[i][0] = transition_model(
+    #         state)[(x, y, action)] * observation_model(state)[observations[0]]
+    #     backpointer_matrix[i][0] = 0
 
-    for t in range(1, len(observations)):
-        for i, state in enumerate(all_possible_states):
-            x, y, action = state
-            # Calculate the max probability for each state
-            max_prob_matrix[i][t] = max([max_prob_matrix[j][t - 1] * transition_model(state)[all_possible_states[j]]
-                                        * observation_model(state)[observations[t]] for j in range(len(all_possible_states))])
-            backpointer_matrix[i][t] = max([max_prob_matrix[j][t - 1] * transition_model(state)[
-                                           all_possible_states[j]] * observation_model(state)[observations[t]] for j in range(len(all_possible_states))])
+    # for t in range(1, len(observations)):
+    #     for i, state in enumerate(all_possible_states):
+    #         x, y, action = state
+    #         # Calculate the max probability for each state
+    #         max_prob_matrix[i][t] = max([max_prob_matrix[j][t - 1] * transition_model(state)[all_possible_states[j]]
+    #                                     * observation_model(state)[observations[t]] for j in range(len(all_possible_states))])
+    #         backpointer_matrix[i][t] = max([max_prob_matrix[j][t - 1] * transition_model(state)[
+    #                                        all_possible_states[j]] * observation_model(state)[observations[t]] for j in range(len(all_possible_states))])
 
-    max_prob = max([max_prob_matrix[i][len(observations) - 1]
-                   for i in range(len(all_possible_states))])
+    # max_prob = max([max_prob_matrix[i][len(observations) - 1]
+    #                for i in range(len(all_possible_states))])
 
-    for i in range(len(all_possible_states)):
-        if max_prob_matrix[i][len(observations) - 1] == max_prob:
-            max_prob_index = i
+    # for i in range(len(all_possible_states)):
+    #     if max_prob_matrix[i][len(observations) - 1] == max_prob:
+    #         max_prob_index = i
 
-    path = [all_possible_states[max_prob_index]]
+    # path = [all_possible_states[max_prob_index]]
 
-    for t in range(len(observations) - 1, 0, -1):
-        path.insert(
-            0, all_possible_states[backpointer_matrix[max_prob_index][t]])
-        max_prob_index = backpointer_matrix[max_prob_index][t]
+    # for t in range(len(observations) - 1, 0, -1):
+    #     path.insert(
+    #         0, all_possible_states[backpointer_matrix[max_prob_index][t]])
+    #     max_prob_index = backpointer_matrix[max_prob_index][t]
 
-    return path
+    # return path
 
 
 def load_data(filename):
