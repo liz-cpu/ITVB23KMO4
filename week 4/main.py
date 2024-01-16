@@ -100,8 +100,23 @@ class MainApp(tk.Frame):
         self.plot_node(cf.START_POS, color=cf.START_C)
 
 # create and start GUI
-root = tk.Tk()
-root.title('Mars robot')
+# root = tk.Tk()
+# root.title('Mars robot')
 
-app = MainApp(root)
-root.mainloop()
+# app = MainApp(root)
+# root.mainloop()
+        
+states, observed_path = mo.load_data('observations_v2.txt')
+all_possible_states = mo.get_all_states()
+viterbi_path = mo.Viterbi(all_possible_states, observed_path)
+# compare with the real path
+real_path = [state[:2] for state in states]
+viterbi_path = [state[:2] for state in viterbi_path]
+print('real path:', real_path)
+print('viterbi path:', viterbi_path)
+# calculate wrong predictions
+wrong_predictions = 0
+for i in range(len(real_path)):
+    if real_path[i] != viterbi_path[i]:
+        wrong_predictions += 1
+print('wrong predictions:', wrong_predictions)

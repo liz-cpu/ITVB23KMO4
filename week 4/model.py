@@ -92,7 +92,44 @@ def observation_model(state):
     return observed_states
 
 def Viterbi(all_possible_states, observations):
-    pass
+    # generate steady state distribution
+    steady_state_distr = {
+        'S': 1/9,
+        'L': 2/9,
+        'R': 2/9,
+        'U': 2/9,
+        'D': 2/9        
+    }
+
+    # initialize probabilities
+    states = [all_possible_states]*len(observations)
+
+    # assign probabilities to states
+    for i in range(len(observations)):
+        states[i] = {state: 0 for state in states[i]}
+        if observations[i] == None:
+            # if observation is missing, use the previous state probabilities and apply the transition model and observation model
+            for state in states[i]:
+                states[i][state] = max([states[i-1][prev_state] * transition_model(prev_state)[state] * observation_model(state)[prev_state[:2]] for prev_state in states[i-1]])
+            continue
+        for state in states[i]:
+            if i == 0:
+                states[i][state] = steady_state_distr[state[2]] * observation_model(state)[observations[i]]
+            else:
+                states[i][state] = max([states[i-1][prev_state] * transition_model(prev_state)[state] * observation_model(state)[observations[i]] for prev_state in states[i-1]])
+
+    # get most likely state
+    most_likely_state = max(states[-1], key=states[-1].get)
+
+    # get most likely path
+    most_likely_path = [most_likely_state]
+    for i in range(len(observations)-1, 0, -1):
+        most_likely_state = max([prev_state for prev_state in states[i-1]], key=lambda prev_state: states[i-1][prev_state] * transition_model(prev_state)[most_likely_state])
+        most_likely_path.append(most_likely_state)
+    most_likely_path.reverse()
+
+    return most_likely_path
+    
 
 def load_data(filename):
     states = []
