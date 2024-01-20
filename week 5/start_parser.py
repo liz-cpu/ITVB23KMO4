@@ -1,12 +1,13 @@
 import nltk
 import sys
+nltk.download('punkt')
 
 def preprocess(sentence):
     """
     Convert `sentence` to a list of its words. Pre-process sentence by converting all characters
     to lowercase and removing any word that does not contain at least one alphabetic character.
     """
-    pass
+    return [word.lower() for word in nltk.word_tokenize(sentence) if any(c.isalpha() for c in word)]
 
 
 def np_chunk(tree):
@@ -15,7 +16,11 @@ def np_chunk(tree):
     as any subtree of the sentence whose label is "NP" that does not itself contain any other
     noun phrases as subtrees.
     """
-    pass
+    chunks = []
+    for subtree in tree.subtrees():
+        if subtree.label() == "NP":
+            chunks.append(subtree)
+    return chunks
 
 def main():
 
@@ -75,3 +80,67 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
