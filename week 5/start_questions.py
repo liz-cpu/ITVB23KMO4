@@ -4,8 +4,10 @@ import os
 import string
 import math
 
-FILE_MATCHES = 1        # nr of files used for the answer
-SENTENCE_MATCHES = 1    # nr of sentences used for the answer
+nltk.download('stopwords')
+
+FILE_MATCHES = 6       # nr of files used for the answer
+SENTENCE_MATCHES = 1   # nr of sentences used for the answer
 
 def main():
 
@@ -83,22 +85,37 @@ def tokenize(document):
     return cleaned_tokens
 
 def compute_idfs(documents):
+    """
+    `documents`: dictionary where key=filename or sentence and value=list of words/tokens
+      ex1: {'jip.txt': ['jip', 'en', 'janneke', 'lopen', 'samen', 'naar', 'school']}
+      ex2: {'Jip en Janneke lopen samen naar school.': ['jip', 'en', 'janneke', 'lopen', 'samen', 'naar', 'school']}
 
-    # documents = dictionary where key=filename or sentence and value=list of words/tokens
-    #   ex1: {'jip.txt': ['jip', 'en', 'janneke', 'lopen', 'samen', 'naar', 'school']}
-    #   ex2: {'Jip en Janneke lopen samen naar school.': ['jip', 'en', 'janneke', 'lopen', 'samen', 'naar', 'school']}
+    returns a dictionary that maps words to their IDF-value
+      ex1: suppose corpus has 2 docs and 1 doc contains the word 'jip' then word_idfs["school"] = ln(1/2) = 0.693
+      ex2: suppose corpus has 6 docs and 2 docs contain the word 'keuken' then word_idfs["keuken"] = ln(6/2) = 1.0986
+    """
 
-    # returns a dictionary that maps words to their IDF-value
-    #   ex1: suppose corpus has 2 docs and 1 doc contains the word 'jip' then word_idfs["school"] = ln(1/2) = 0.693
-    #   ex2: suppose corpus has 6 docs and 2 docs contain the word 'keuken' then word_idfs["keuken"] = ln(6/2) = 1.0986
+    # change all lists of words to sets of words
+    for key in documents:
+        documents[key] = set(documents[key])
 
-    # number of documents
-    num_docs = len(documents)
-    # dictionary to count number of docs containing each word
-    count_docs_have_word = dict()
+    # dict to hold idf values for words
+    word_idfs = dict()
 
-    # your code
+    # add all words to dict
+    for key in documents:
+        for word in documents[key]:
+            if word not in word_idfs:
+                word_idfs[word] = 0
 
+    # loop through documents and increment idf value for the words in the document
+    for key in documents:
+        for word in documents[key]:
+            word_idfs[word] += 1
+            break
+        # devide by total nr of documents and take log
+        word_idfs[word] = math.log(len(documents)/word_idfs[word])
+    
     return word_idfs
 
 def top_files(query, files, idfs, n):
@@ -114,7 +131,13 @@ def top_files(query, files, idfs, n):
     # dictionary to hold scores for files
     file_scores = {filename:0 for filename in files}
 
-    # your code
+    for filename in files:
+        for word in query:
+            if word in files[filename]:
+                file_scores[filename] += idfs[word]
+
+    # rank files by score and return n files
+    sorted_files = sorted([filename for filename in files], key= lambda x: file_scores[x], reverse=True)
 
     # return best n files
     return sorted_files[:n]
@@ -131,7 +154,16 @@ def top_sentences(query, sentences, idfs, n):
     # dict to score sentences:
     sentence_score = {sentence:{'idf_score': 0, 'length':0, 'query_words':0, 'qtd_score':0} for sentence in sentences}
 
-    # your code
+    # loop through sentences and calculate scores
+    for sentence in sentences:
+        # calculate idf score
+        for word in query:
+            if word in sentences[sentence]:
+                sentence_score[sentence]['idf_score'] += idfs[word]
+                sentence_score[sentence]['query_words'] += 1
+        # calculate qtd score
+        sentence_score[sentence]['length'] = len(sentences[sentence])
+        sentence_score[sentence]['qtd_score'] = sentence_score[sentence]['query_words']/sentence_score[sentence]['length']
 
     # example: Query: jip
     # sentence_score:

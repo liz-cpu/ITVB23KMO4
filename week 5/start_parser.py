@@ -1,13 +1,18 @@
 import nltk
 import sys
 
+nltk.download('punkt')
+
 def preprocess(sentence):
     """
     Convert `sentence` to a list of its words. Pre-process sentence by converting all characters
     to lowercase and removing any word that does not contain at least one alphabetic character.
     """
-    pass
 
+    words = nltk.word_tokenize(sentence.lower())
+    words = [word for word in words if any(c.isalpha() for c in word)]
+    print(words)
+    return words
 
 def np_chunk(tree):
     """
@@ -15,7 +20,16 @@ def np_chunk(tree):
     as any subtree of the sentence whose label is "NP" that does not itself contain any other
     noun phrases as subtrees.
     """
-    pass
+    
+    chunks = []
+
+    # for each subtree in the tree
+    for subtree in tree.subtrees():
+        # if the subtree is a noun phrase and does not contain any other noun phrases
+        if subtree.label() == "NP" and not list(subtree.subtrees(lambda t: t.label() == "NP" and t != subtree)):
+            chunks.append(subtree)
+
+    return chunks
 
 def main():
 
@@ -32,14 +46,21 @@ def main():
     slist[9] = "En als ze klaar zijn, wil Jip direct weer met de trein gaan spelen."
 
     TERMINALS = """
-    N -> "jip" | "moeder"
-    V -> "roept"
+    N -> "jip" | "moeder" | "janneke" | "slaapkamer" | "takkie" | "staart" | "pootjes" | "brandweerauto" | "keukentrap" | "hij" | "slee" | "jongetjes" | "hondjes" | "morgen" | "raam" | "ze" | "trein"
+    V -> "roept" | "spelen" | "is" | "valt" | "loopt" | "komt" | "heeft" | "gezien" | "kijkt" | "wil" | "gaan" | "zijn"
+    Con -> "en" | "als"
+    Det -> "de" | "het" | "een" | "zijn" | "twee"
+    P -> "in" | "tussen" | "met" | "uit"
+    Adj -> "grote" | "rode" | "voorzichtig" | "volgende" | "klaar"
+    Adv -> "heel" | "bijna" | "overboord" | "weg" | "voorbij" | "nu" | "er" | "terug"  | "erop" | "ervoor" | "morgen" | "direct" | "weer"
     """
 
     NONTERMINALS = """
-    S -> NP VP
-    VP -> V | V NP
-    NP -> N
+    S -> NP VP | VP VP | Con S
+    PP -> P NP
+    VP -> V | VP PP | S V | VP V | V NP | V NP PP
+    NP -> N | Adv NP | NP Con NP | Det Nom | NP Adv | Adv NP | Adj Nom | NP Adj | Adv
+    Nom -> N | Adj Nom
     """
 
     # parse CFG from strings

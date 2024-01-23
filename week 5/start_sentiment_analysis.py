@@ -2,6 +2,8 @@ import nltk.classify.util
 from nltk.classify import NaiveBayesClassifier
 from nltk.corpus import movie_reviews
 
+nltk.download('movie_reviews')
+
 # Naive Bayes explained: https://www.youtube.com/watch?v=O2L2Uv9pdDA
 
 def extract_features(word_list):
@@ -34,8 +36,12 @@ print("Number of training datapoints: ", len(features_train))
 print("Number of test datapoints: ", len(features_test)) 
 
 # train the NaiveBayesClassifier
+classifier = NaiveBayesClassifier.train(features_train)
 # print accuracy of classifier
+print("Accuracy of the classifier: ", nltk.classify.util.accuracy(classifier, features_test))
 # show the 20 most informative features
+print("\nTop 20 most informative words: ")
+classifier.show_most_informative_features(20)
 
 # sample input reviews
 input_reviews = [
@@ -55,3 +61,9 @@ print("Predictions: ")
 
 for review in input_reviews:
     # print pos or negative, together with the probability
+    print("\nReview:", review)
+    probdist = classifier.prob_classify(extract_features(review.split()))
+    pred_sentiment = probdist.max()
+    print("Predicted sentiment:", pred_sentiment)
+    print("Probability:", round(probdist.prob(pred_sentiment), 2))
+    
