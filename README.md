@@ -3,10 +3,12 @@ Repository for ITVB23KMO4 **[Artificial Intelligence](https://catalogue.hanze.nl
 
 ## Checklist
 
-| Assignment | Deadline | Ramon's version | Liz's version |
-| --- | --- | --- | --- |
-| Week 1 | Nov 28| [❌](#) | [❌](#) |
-| Week 2 | Dec 5| [❌](#) | [❌](#) |
-| Week 3 | Dec 19| [❌](#) | [❌](#) |
-| Week 4 | Jan 9| [❌](#) | [❌](#) |
-| Week 5 | Jan 23| [❌](#) | [❌](#) |
+| Assignment | Deadline |  |
+| --- | --- | --- |
+| Week 1 | Nov 28| ✅ |
+| Week 2 | Dec 5| ✅ |
+| Week 3 | Dec 19| ✅ |
+| Week 4 | Jan 9| ✅ |
+| Week 5 | Jan 23| ✅ |
+
+Final grade: 7.6
