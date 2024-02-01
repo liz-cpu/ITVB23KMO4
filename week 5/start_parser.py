@@ -47,21 +47,21 @@ if __name__ == "__main__":
                     "En als ze klaar zijn, wil Jip direct weer met de trein gaan spelen."]
 
     TERMINALS = """
-    N -> "jip" | "moeder" | "janneke" | "slaapkamer" | "voorzichtig" | "zijn" | "staart" | "pootjes" | "brandweerauto" | "keukentrap" | "hij" | "slee" | "jongetjes" | "hondjes" | "morgen" | "raam" | "ze" | "weer" | "trein"
-    V -> "roept" | "spelen" | "is" | "valt" | "loopt" | "komt" | "heeft" | "gezien" | "kijkt" | "wil" | "gaan"
-    C -> "en" | "overboord" | "met" | "als"
-    P -> "in" | "er" | "erop"
-    D -> "de" | "een" | "twee" | "het"
-    Av -> "nu" | "bijna" | "takkie" | "weg" | "tussen" | "voorbij" | "terug" | "ervoor" | "volgende" | "uit" | "klaar" | "direct"
-    Aj -> "heel" | "grote" | "rode"
+    N -> "jip" | "moeder" | "janneke" | "slaapkamer" | "takkie" | "staart" | "pootjes" | "brandweerauto" | "keukentrap" | "hij" | "slee" | "jongetjes" | "hondjes" | "morgen" | "raam" | "ze" | "trein"
+    V -> "roept" | "spelen" | "is" | "valt" | "loopt" | "komt" | "heeft" | "gezien" | "kijkt" | "wil" | "gaan" | "zijn"
+    Con -> "en" | "als"
+    Det -> "de" | "het" | "een" | "zijn" | "twee"
+    P -> "in" | "tussen" | "met" | "uit"
+    Adj -> "grote" | "rode" | "voorzichtig" | "volgende" | "klaar"
+    Adv -> "heel" | "bijna" | "overboord" | "weg" | "voorbij" | "nu" | "er" | "terug"  | "erop" | "ervoor" | "morgen" | "direct" | "weer"
     """
 
     NONTERMINALS = """
-    S -> NP VP
-    VP -> V | V NP | V NP PP | V PP | V NP NP | V NP NP PP | V NP PP NP | V NP PP PP | V PP NP | V PP PP | V PP NP NP | V PP NP PP | V PP PP NP | V PP PP PP
-    NP -> N | D N | D Aj N | D Aj Aj N | D Aj Aj Aj N | Av
-
-
+    S -> NP VP | VP VP | Con S
+    PP -> P NP
+    VP -> V | VP PP | S V | VP V | V NP | V NP PP
+    NP -> N | Adv NP | NP Con NP | Det Nom | NP Adv | Adv NP | Adj Nom | NP Adj | Adv
+    Nom -> N | Adj Nom
     """
 
     # parse CFG from strings
